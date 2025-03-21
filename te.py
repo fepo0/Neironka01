@@ -14,7 +14,7 @@ num9 = list('111101111001111')
 
 nums = [num0, num1, num2, num3, num4, num5, num6, num7, num8, num9]
 
-tema = 7
+tema = 5
 n_sensor = 15
 weights = [0 for i in range(n_sensor)]
 
@@ -41,7 +41,7 @@ def increase(number):
         if int(number[i]) == 1:
             weights[i] += 1
 
-n = 1
+n = 100000
 for i in range(n):
     j = random.randint(0, 9)
     r = perceptron(nums[j])
@@ -56,7 +56,6 @@ for i in range(n):
 print(j)
 print(weights)
 
-'''
 # Проверка программы на обучающей выборке
 print("0 это 5? ", perceptron(num0))
 print("1 это 5? ", perceptron(num1))
@@ -86,4 +85,3 @@ print("Узнал 5 в 53? ", perceptron(num53))
 print("Узнал 5 в 54? ", perceptron(num54))
 print("Узнал 5 в 55? ", perceptron(num55))
 print("Узнал 5 в 56? ", perceptron(num56))
-'''
