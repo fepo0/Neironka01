@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+
 
 # Описание класса Perceptron
 class Perceptron:
@@ -31,6 +33,36 @@ class Perceptron:
     def predict(self, X):
         return np.where(self.net_input(X) >= 0.0, 1, -1)
 
+#-------------------------------------
+
+class AdaptiveLinearNeuron(object):
+    def __init__(self, rate=0.01, niter=10):
+        self.rate = rate
+        self.niter = niter
+
+    def fit(self, X, y):
+        self.weight = np.zeros(X.shape[1])
+        self.cost = []
+        for i in range(self.niter):
+            output = self.net_input(X)
+            errors = y - output
+            self.weight[1:] += self.rate * X.T.dot(errors)
+            self.weight[0] += self.rate * errors.sum()
+            cost = (errors ** 2).sum() / 2.0
+            self.cost.append(cost)
+        return self
+
+    def net_input(self, X):
+        return np.dot(X, self.weight[1:]) + self.weight[0]
+
+    def activation(self, X):
+        return self.net_input(X)
+
+    def predict(self, X):
+        return np.where(self.activation(X) >= 0.0, 1, -1)
+
+#----------------------------------
+
 url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data'
 df = pd.read_csv(url, header=None)
 print('Массив')
@@ -58,4 +90,66 @@ plt.scatter(X[50:100, 0], X[50:100, 1], color='blue', marker='x', label='раз�
 plt.xlabel('длина чашелистика')
 plt.ylabel('длина лепестка')
 plt.legend(loc='upper left')
-plt.show()
+plt.savefig("iris_gr.png")
+
+#---------------------------------
+
+# Тренеровка
+ppn = Perceptron(eta=0.1, n_iter=10)
+ppn.fit(X, y)
+plt.plot(range(1, len(ppn.errors_) + 1), ppn.errors_, marker='o')
+plt.xlabel("Эпохи")
+plt.ylabel("Число случаев ошибочной классификации")
+plt.savefig("perceptron_gr.png")
+
+i1 = [5.5, 1.6]
+i2 = [6.4, 4.5]
+R1 = ppn.predict(i1)
+R2 = ppn.predict(i2)
+print("R1 = ", R1, " R2 = ", R2)
+
+if R1 == 1:
+    print("R1 = Вид Iris setosa")
+else:
+    print("R1 = Вид Iris versicolor")
+
+def plot_decision_regions(X, y, classifier, resolution=0.02):
+    markers = ('s', 'x', 'o', '^', 'v')
+    colors = ('red', 'blue', 'green', 'gray', 'cyan')
+    cmap = ListedColormap(colors[:len(np.unique(y))])
+
+    x1_min, x1_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    x2_min, x2_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    xx1, xx2 = np.meshgrid(np.arange(x1_min, x1_max, resolution), np.arange(x2_min, x2_max, resolution))
+    Z = classifier.predict(np.array([xx1.ravel(), xx2.ravel()]).T)
+    Z = Z.reshape(xx1.shape)
+    plt.contourf(xx1, xx2, Z, alpha=0.4, cmap=cmap)
+    plt.xlim(xx1.min(), xx1.max())
+    plt.ylim(xx2.min(), xx2.max())
+
+    for idx, cl in enumerate(np.unique(y)):
+        plt.scatter(x=X[y == cl, 0], y=X[y == cl, 1], alpha=0.8, color=cmap(idx), marker=markers[idx], label=cl)
+
+plot_decision_regions(X, y, classifier=ppn)
+plt.xlabel("Длина чашелистника, см")
+plt.ylabel("Длина лепестка, см")
+plt.legend(loc='upper left')
+plt.savefig("decision_regions.png")
+
+#-----------------------------------
+
+# AdaptiveLinearNeuron
+fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(8, 4))
+
+aln1 = AdaptiveLinearNeuron(0.01, 10).fit(X, y)
+ax[0].plot(range(1, len(aln1.cost) + 1), np.log10(aln1.cost), marker='o')
+ax[0].set_xlabel('Эпохи')
+ax[0].set_ylabel("log(Сумма квадратичных ошибок)")
+ax[0].set_title("ADALINE. Темп обучения 0.01")
+
+aln2 = AdaptiveLinearNeuron(0.0001, 10).fit(X, y)
+ax[1].plot(range(1, len(aln2.cost) + 1), aln2.cost, marker='o')
+ax[1].set_xlabel("Эпохи")
+ax[1].set_ylabel("Сумма квадратичных ошибок")
+ax[1].set_title("ADALINE. Темп обучения 0.0001")
+plt.savefig("ochenka_result.png")
