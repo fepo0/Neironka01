@@ -50,4 +50,8 @@ df = sb.load_dataset('iris')
 sb.set_style("ticks")
 sb.pairplot(df, hue='species', diag_kind="kde", kind='scatter', palette="husl")
 
+pr = knn.predict(X_test)
+print("Прогноз вида на тестовом наборе:\n {}".format(pr))
+print("Точность прогноза на тестовом наборе: {:.2f}".format(np.mean(pr == y_test)))
+
 plt.savefig('matricha_rasseania.png')
