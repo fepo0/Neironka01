@@ -1,5 +1,5 @@
 from keras.datasets import mnist
-import  matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
 print("Тренировачный набор данных ", X_train.shape)
